@@ -149,11 +149,13 @@ var Dataset = function(result){
     // construct dataset object from returned resultset.
     this.data = result.rows
     this.fields = result.fields
+    this.explain = false;
     this.nrecords = result.rows.length;
     if (result.cmdStatus.indexOf('SELECT') > -1){
         this.resultStatus = 'PGRES_TUPLES_OK';
     } else if (result.cmdStatus.indexOf('EXPLAIN') > -1){
         this.resultStatus = 'PGRES_TUPLES_OK';
+        this.explain = true;
     } else {
         this.resultStatus = 'PGRES_COMMAND_OK';
     }
@@ -164,7 +166,8 @@ var Dataset = function(result){
 }
 
 var Response = function(query){
-    this.query = query
+    this.connector_type = "postgres";
+    this.query = query;
     this.datasets = [];
     this.start_time = now();
     this.duration = null;
@@ -196,7 +199,7 @@ var normalizeConnstr = function(connstr, password, redshift){
         }
         connstr = util.format('%s//%s%s%s%s?%s',
             parsed.protocol,
-            parsed.auth,
+            (parsed.auth == null) ? '' : parsed.auth,
             (password == null) ? '' : ':'+password,
             (parsed.host == null) ? '' : '@'+parsed.host,
             (parsed.path == null) ? '' : parsed.pathname,

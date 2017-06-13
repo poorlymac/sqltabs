@@ -79,7 +79,7 @@ var CloudMessage = React.createClass({
     open: function(){
         var docid = TabsStore.getCloudDoc();
         if (this.target_server.indexOf("http://") == -1 && this.target_server.indexOf('https://') == -1){
-            var target_server = "http://"+this.target_server;
+            var target_server = "https://"+this.target_server;
         } else {
             var target_server = this.target_server;
         }
@@ -123,7 +123,7 @@ var CloudMessage = React.createClass({
         return(
             <div className='static-modal'>
 
-              <Modal
+              <Modal.Dialog
                 bsStyle='primary'
                 backdrop={false}
                 animation={false}
@@ -132,25 +132,25 @@ var CloudMessage = React.createClass({
                 onRequestEnter={this.enter}
                 >
 
-                <div className='modal-body'>
+                <Modal.Body>
 
                     <table className="about-table"><tr>
                     <td><img className="about-logo" src="logo.png"/></td>
                     <td>
                         <div>
-                            Share on <input ref="target_server" onChange={this.targetChangeHandler} className="target-server-input" type="text" placeholder="www.sqltabs.com" defaultValue={this.target_server}></input>
+                            Share on <input ref="target_server" onChange={this.targetChangeHandler} className="target-server-input" type="text" placeholder="share.sqltabs.com" defaultValue={this.target_server}></input>
                         </div>
                     </td>
                     </tr></table>
 
-                </div>
+                </Modal.Body>
 
-                <div className='modal-footer'>
+                <Modal.Footer>
                    <Button onClick={this.share}>OK</Button>
                    <Button onClick={this.hide}>Cancel</Button>
-                </div>
+                </Modal.Footer>
 
-              </Modal>
+              </Modal.Dialog>
             </div>
         );
     },
@@ -160,7 +160,7 @@ var CloudMessage = React.createClass({
         return (
             <div className='static-modal'>
 
-              <Modal
+              <Modal.Dialog
                 bsStyle='primary'
                 backdrop={false}
                 animation={false}
@@ -169,7 +169,7 @@ var CloudMessage = React.createClass({
                 onRequestEnter={this.enter}
                 >
 
-                <div className='modal-body'>
+                <Modal.Body>
 
                     <table className="about-table"><tr>
                     <td><img className="about-logo" src="logo.png"/></td>
@@ -182,13 +182,13 @@ var CloudMessage = React.createClass({
                     </td>
                     </tr></table>
 
-                </div>
+                </Modal.Body>
 
-                <div className='modal-footer'>
+                <Modal.Footer>
                    <Button onClick={this.hide}>Cancel</Button>
-                </div>
+                </Modal.Footer>
 
-              </Modal>
+              </Modal.Dialog>
             </div>
         );
     },
@@ -198,7 +198,7 @@ var CloudMessage = React.createClass({
         return (
           <div className='static-modal'>
 
-            <Modal
+            <Modal.Dialog
               bsStyle='primary'
               backdrop={false}
               animation={false}
@@ -207,7 +207,7 @@ var CloudMessage = React.createClass({
               onRequestEnter={this.enter}
               >
 
-              <div className='modal-body'>
+              <Modal.Body>
                 <table className="about-table"><tr>
                 <td><img className="about-logo" src="logo.png"/></td>
                 <td> <p> Your document is available on the URL: </p>
@@ -215,12 +215,13 @@ var CloudMessage = React.createClass({
                 </td>
                 </tr></table>
 
-              </div>
-              <div className='modal-footer'>
-                 <Button onClick={this.open}>Open</Button>
-              </div>
+              </Modal.Body>
 
-            </Modal>
+              <Modal.Footer>
+                 <Button onClick={this.open}>Open</Button>
+              </Modal.Footer>
+
+            </Modal.Dialog>
           </div>
         );
     },
@@ -237,7 +238,7 @@ var CloudMessage = React.createClass({
         return (
           <div className='static-modal'>
 
-            <Modal
+            <Modal.Dialog
               bsStyle='primary'
               backdrop={false}
               animation={false}
@@ -246,7 +247,7 @@ var CloudMessage = React.createClass({
               onRequestEnter={this.enter}
               >
 
-              <div className='modal-body'>
+              <Modal.Body>
                 <table className="about-table"><tr>
                 <td><img className="about-logo" src="logo.png"/></td>
                 <td> <p> Error: </p>
@@ -254,12 +255,13 @@ var CloudMessage = React.createClass({
                 </td>
                 </tr></table>
 
-              </div>
-              <div className='modal-footer'>
-                 <Button onClick={this.hide}>Close</Button>
-              </div>
+              </Modal.Body>
 
-            </Modal>
+              <Modal.Footer>
+                 <Button onClick={this.hide}>Close</Button>
+              </Modal.Footer>
+
+            </Modal.Dialog>
           </div>
         );
     },

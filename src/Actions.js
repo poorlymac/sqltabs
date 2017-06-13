@@ -82,20 +82,23 @@ var Actions = {
         });
     },
 
-    newTab: function(script, filename){
+    newTab: function(script, filename, connstr){
         AppDispatcher.dispatch({
             eventName: 'select-tab',
             key: 0,
             script: script,
+            connstr: connstr,
             filename: filename,
         });
     },
 
     close: function(id){
-        AppDispatcher.dispatch({
-            eventName: 'close-tab',
-            key: id,
-        });
+        if (typeof id !== 'undefined' || window.confirm('Are you sure you want to close the current tab?')) {
+            AppDispatcher.dispatch({
+                eventName: 'close-tab',
+                key: id,
+            });
+        }
     },
 
     nextTab: function(){
@@ -121,6 +124,13 @@ var Actions = {
         AppDispatcher.dispatch({
             eventName: 'set-mode',
             key: mode,
+        });
+    },
+
+    enableSchemaFilter: function (filter) {
+        AppDispatcher.dispatch({
+            eventName: 'enable-schema-filter',
+            key: filter,
         });
     },
 
@@ -164,6 +174,18 @@ var Actions = {
     execAll: function(){
         SignalsDispatcher.dispatch({
             eventName: 'execute-all',
+        });
+    },
+
+    formatBlock: function(){
+        SignalsDispatcher.dispatch({
+            eventName: 'format-block',
+        });
+    },
+
+    formatAll: function(){
+        SignalsDispatcher.dispatch({
+            eventName: 'format-all',
         });
     },
 
@@ -235,6 +257,20 @@ var Actions = {
         AppDispatcher.dispatch({
             eventName: 'set-font-size',
             size: size,
+        });
+    },
+
+    setSchemaFilterMode: function(mode){
+        AppDispatcher.dispatch({
+            eventName: 'set-schema-filter-mode',
+            mode: mode,
+        });
+    },
+
+    setSchemaFilterRegEx: function(regex){
+        AppDispatcher.dispatch({
+            eventName: 'set-schema-filter-regex',
+            regex: regex,
         });
     },
 
@@ -332,6 +368,12 @@ var Actions = {
         });
     },
 
+    showSettings: function(){
+        AppDispatcher.dispatch({
+            eventName: 'show-settings',
+        });
+    },
+
     hideProject: function(){
         AppDispatcher.dispatch({
             eventName: 'hide-project',
@@ -356,7 +398,13 @@ var Actions = {
             filename: filename,
             format: format,
         });
-    }
+    },
+
+    connectionColorChange: function(){
+        AppDispatcher.dispatch({
+            eventName: 'connection-color-change',
+        });
+    },
 }
 
 module.exports = Actions;

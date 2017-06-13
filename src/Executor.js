@@ -1,7 +1,25 @@
+/*
+  Copyright (C) 2015  Aliaksandr Aliashkevich
+
+      This program is free software: you can redistribute it and/or modify
+      it under the terms of the GNU General Public License as published by
+      the Free Software Foundation, either version 3 of the License, or
+      (at your option) any later version.
+
+      This program is distributed in the hope that it will be useful,
+      but WITHOUT ANY WARRANTY; without even the implied warranty of
+      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+      GNU General Public License for more details.
+
+      You should have received a copy of the GNU General Public License
+      along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 var postgres = require('./connectors/postgres/Database.js');
 var cassandra = require('./connectors/cassandra/Database.js');
 var mysql = require('./connectors/mysql/Database.js');
 var mssql = require('./connectors/mssql/Database.js');
+var alasql = require('./connectors/alasql/Database.js');
 var url = require('url');
 var path = require('path');
 var tunnel = require('tunnel-ssh');
@@ -12,10 +30,10 @@ var TunnelPorts = {};
 var PortSequence = 15000;
 
 function resolveHome(filepath) {
-    if (filepath[0] === '~') {
+    if (filepath.charAt(0) === '~') {
         return path.join(process.env.HOME, filepath.slice(1));
     }
-    return path;
+    return filepath;
 }
 
 var Executor = {
@@ -36,7 +54,9 @@ var Executor = {
     },
 
     _getConnector: function(connstr){
-        if (connstr.indexOf('cassandra://') == 0){
+        if  (connstr == '' || connstr == null || connstr.indexOf('alasql://') == 0){
+            var db = alasql;
+        } else if (connstr.indexOf('cassandra://') == 0){
             var db = cassandra;
         } else if (connstr.indexOf('mysql://') == 0){
             var db = mysql;
@@ -57,6 +77,7 @@ var Executor = {
             function(){callback();}
         );
         client.on('error', function(e){
+            console.log("test ssh error: "+e);
             client.end();
         });
     },
@@ -80,7 +101,12 @@ var Executor = {
         if (db_url.path == null){
             var url_path= '';
         } else {
-            var url_path = db_url.path;
+            if (db_url.path.indexOf('---') > 0){ // trim connection alias
+                var url_path = db_url.path.split('---')[0];
+                url_path = decodeURI(url_path); // convert possible %20 etc
+            } else {
+                var url_path = decodeURI(db_url.path);
+            }
         }
 
         try{
@@ -91,6 +117,7 @@ var Executor = {
             }
         }
         catch(e){
+            console.log(e);
             identity_file = null;
         }
 
@@ -116,24 +143,36 @@ var Executor = {
                 readyTimeout: 30000,
             };
 
+            if (ssh_config.username == null){
+                delete ssh_config.username;
+            }
+            if (ssh_config.port == null){
+                delete ssh_config.port;
+            }
+            console.log(ssh_config);
+
             var ssh_server = tunnel(ssh_config, function (error, server) {
 
                 if (error){
+                    console.log(error);
                     err_callback(id, "create ssh tunnel error: "+error);
                     return;
                 }
+
                 Tunnels[id] = server;
                 TunnelPorts[id] = PortSequence;
 
                 self.testSSH(id, ssh_config, function(){
                     return callback(self._getConnector(mapped_db_url));
-                }, function(){
-                    err_callback(id, "ssh tunnel error");
+                }, function(err){
+                    console.log(err);
+                    err_callback(id, "ssh tunnel error: "+err);
                 });
             });
 
             ssh_server.on('error', function(err, srv){
-                self.releaseTunnel(id);
+                console.log(ssh_server.config);
+                err_callback(id, err);
             });
 
 

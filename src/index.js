@@ -1,11 +1,23 @@
-require('./build/App.js');
-var $ = require('jquery');
-var c3 = require('c3');
+/*
+  Copyright (C) 2015  Aliaksandr Aliashkevich
 
-function openExternal(url){
-    var shell = require('electron').shell;
-    shell.openExternal(url);
-}
+      This program is free software: you can redistribute it and/or modify
+      it under the terms of the GNU General Public License as published by
+      the Free Software Foundation, either version 3 of the License, or
+      (at your option) any later version.
+
+      This program is distributed in the hope that it will be useful,
+      but WITHOUT ANY WARRANTY; without even the implied warranty of
+      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+      GNU General Public License for more details.
+
+      You should have received a copy of the GNU General Public License
+      along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+require('./build/App.js');
+var c3 = require('c3');
+var d3 = require('d3');
 
 function scrollTo(div, to){
     return $(div).animate({scrollTop: $(to).position().top - $(div).parent().offset().top}, 300);
@@ -40,167 +52,64 @@ function scrollToUp(div, to){
     }
 }
 
-// return a pivot data for a dataset
-function pivotTable(dataset){
-    var column_names = [];
-    var xvalues = [];
-    var rows = {};
-    console.log(dataset.data);
-    for (rn in dataset.data){
-        if (rn == 0){ // skip first row as it contains column names we don't need for pivot
-            continue;
-        }
-        var val1 = dataset.data[rn][0];
-        var val2 = dataset.data[rn][1];
-        if (column_names.indexOf(val2) == -1){
-            column_names.push(val2);
-        }
-        if (xvalues.indexOf(val1) == -1){
-            xvalues.push(val1);
-        }
-        if (!(val1 in rows)){
-            rows[val1] = [];
-        }
-        rows[val1].push(dataset.data[rn][2]);
-    }
-    var res = [];
-    column_names.unshift(dataset.fields[0].name);
-    res.push(column_names); // first row is pivot column names
-    xvalues.forEach(function(item){
-        var r = [item].concat(rows[item]);
-        res.push(r);
-    });
-    return res;
-}
 
-
-function mount_charts(){
-
-    $("input[type=hidden]").each( function(idx, item){
-        var chart_id = item.id.substr(5);
-        var dataset = JSON.parse(decodeURIComponent(item.value));
-
-        var chart_div = $("div[data-chart-id='"+chart_id+"']")[0];
-
-        var chart_type = $("div[data-chart-id='"+chart_id+"']").attr('data-chart-type');
-
-        var chart_args = $("div[data-chart-id='"+chart_id+"']").attr('data-chart-args');
-
-        var chart_arg_x = chart_args.match("\\s*x\\s*=\\s*([A-z0-9_]*)");
-        if (chart_arg_x != null && chart_arg_x.length>0){
-            chart_arg_x = chart_arg_x[1];
-        }
-
-        var pivot = chart_args.match("\\s*pivot\\s*");
-
-        var fields = dataset.fields.map(function(field, i){
-            return field.name;
-        });
-
-        var data = {};
-
-        var column_charts = ['line', 'spline', 'area', 'step', 'area-spline', 'area-step', 'bar'];
-        var row_charts = ['pie', 'donut'];
-
-        if (column_charts.indexOf(chart_type) != -1){
-            // field name as a header
-            var rows = dataset.data;
-            rows.unshift(fields);
-
-            data = {
-                rows: rows,
-                type: chart_type,
-            }
-
-            if (pivot){
-                data.rows = pivotTable(dataset);
-                chart_arg_x = 1; // in pivot charts first column is always at axis X
-            }
-
-            if (chart_arg_x){
-
-                var xfield = dataset.fields[chart_arg_x-1];
-                if (xfield){
-
-                    data.x = xfield.name;
-
-                    if (['DATE', 'Date'].indexOf(xfield.type) > -1){
-                        var axis = {
-                            x: {
-                                type: 'timeseries',
-                                tick: {
-                                    format: '%Y-%m-%d'
-                                }
-                            }
-                        };
-                    }
-
-                    if (['TIMESTAMPTZ'].indexOf(xfield.type) > -1 ){
-                        var axis = {
-                            x: {
-                                type: 'timeseries',
-                                tick: {
-                                    format: '%Y-%m-%d %H:%M:%S.%L%Z'
-                                }
-                            }
-                        };
-                        // transform timestamp format to the one edible by d3
-                        for (var i=1; i < data.rows.length; i++){
-                            data.rows[i][chart_arg_x-1] = data.rows[i][chart_arg_x-1].replace(
-                            /(\.[0-9]{3})([0-9]*)(\+[0-9]{2}$)/g, '$1$300'
-                            );
-                        }
-
-                        data.xFormat = '%Y-%m-%d %H:%M:%S.%L%Z';
-
-                    }
-
-                    if (['TIMESTAMP', 'DATETIME', 'DateTime', 'DateTime2'].indexOf(xfield.type) > -1){
-                        var axis = {
-                            x: {
-                                type: 'timeseries',
-                                tick: {
-                                    format: '%Y-%m-%d %H:%M:%S.%L'
-                                }
-                            }
-                        };
-                        // transform timestamp format to the one edible by d3
-                        for (var i=1; i < data.rows.length; i++){
-                            data.rows[i][chart_arg_x-1] = data.rows[i][chart_arg_x-1].replace(
-                            /(\.[0-9]{3})([0-9]*)$/g, '$1'
-                            );
-                        }
-
-                        data.xFormat = '%Y-%m-%d %H:%M:%S.%L';
-                    }
-                }
-            }
-
-        } else if (row_charts.indexOf(chart_type) != -1){
-            // first column value as a header
-            var columns = dataset.data;
-            data = {
-                columns: columns,
-                type: chart_type,
-            }
-        } else {
-            var _div = $("div[data-chart-id='"+chart_id+"']");
-            _div.html('<div class="connection-error alert alert-danger">Chart '+chart_type+' is not supported<div>');
-            return;
-        }
-
-        try {
-            var chart = c3.generate({
-                bindto: chart_div,
-                data: data,
-                axis: axis,
-            });
-        } catch (err){
-            var _div = $("div[data-chart-id='"+chart_id+"']");
-            _div.html('<div class="connection-error alert alert-danger">Chart building error<div>');
-            console.log(err);
-            return;
-        }
-    });
-
-}
+//function mount_tree_chart(chart_id, dataset){
+//
+//    // drawing
+//    var margin = {top: 40, right: 40, bottom: 40, left: 40},
+//        width = 960 - margin.left - margin.right,
+//        height = 500 - margin.top - margin.bottom;
+//
+//    var tree = d3.layout.tree()
+//        .size([height, width]);
+//
+//    var diagonal = d3.svg.diagonal()
+//        .projection(function(d) { return [d.y, d.x]; });
+//
+//    var svg = d3.select("[data-chart-id='"+chart_id+"']").append("svg")
+//        .attr("width", width + margin.left + margin.right)
+//        .attr("height", height + margin.top + margin.bottom)
+//      .append("g")
+//        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+//
+//    // data transformation
+//
+//    var data = dataset.data;
+//    // convert list of lists to list of dicts
+//    data = data.map(function(d){
+//        return {source: d[0], target: d[1], label: d[2]};
+//    });
+//
+//    var nodesByName = {};
+//
+//    data.forEach(function(link) {
+//        var parent = link.source = nodeByName(link.source),
+//            child = link.target = nodeByName(link.target);
+//        if (parent.children) parent.children.push(child);
+//        else parent.children = [child];
+//    });
+//
+//    var nodes = tree.nodes(data[0].source);
+//
+//
+//    // drawing again
+//  // Create the link lines.
+//  svg.selectAll(".link")
+//      .data(data)
+//    .enter().append("path")
+//      .attr("class", "link")
+//      .attr("d", diagonal);
+//
+//  // Create the node circles.
+//  svg.selectAll(".node")
+//      .data(nodes)
+//    .enter().append("circle")
+//      .attr("class", "node")
+//      .attr("r", 4.5)
+//      .attr("cx", function(d) { return d.y; })
+//      .attr("cy", function(d) { return d.x; });
+//
+//    function nodeByName(name) {
+//        return nodesByName[name] || (nodesByName[name] = {name: name});
+//    }
+//}

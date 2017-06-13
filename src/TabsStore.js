@@ -46,24 +46,24 @@ var Tab = function(id, connstr){
 
     this.getTitle = function(){
         if (this.filename != null){
-            var ret = this.filename;
+            return this.filename;
         } else {
             if (typeof(this.connstr) != 'undefined' && this.connstr != null) {
 
                     if (this.connstr.indexOf('---') != -1){ // show alias
-                        var ret = '[ '+this.connstr.match(/---\s*(.*)/)[1]+' ]';
+                       return '[ '+this.connstr.match(/---\s*(.*)/)[1]+' ]';
+                    } else if (this.connstr.startsWith('about:')) {
+                        return this.connstr[6].toUpperCase() + this.connstr.substr(7).toLowerCase()
                     } else {
                         if (this.connstr.length > 30){ // cut too long connstr
-                            var ret = '[...'+this.connstr.substr(this.connstr.length-20)+' ]';
+                           return '[...'+this.connstr.substr(this.connstr.length-20)+' ]';
                         } else {
-                            var ret = '[ '+this.connstr+' ]';
+                           return '[ '+this.connstr+' ]';
                         }
                     }
-            } else {
-                return '';
             }
         }
-        return ret;
+        return '';
     }
 };
 
@@ -77,7 +77,7 @@ var _TabsStore = function(){
     this.selectedTab = 0;
     this.renderer = 'plain'; // plain or auto
     this.showQuery = false;
-    this.sharingServer = (Config.getSharingServer() || 'www.sqltabs.com');
+    this.sharingServer = (Config.getSharingServer() || 'share.sqltabs.com');
     this.auto_completion = (Config.getAutoCompletion() || true);
 
     this.connectionHistory = (Config.getConnHistory() || []);
@@ -86,9 +86,26 @@ var _TabsStore = function(){
 
     this.getAll = function(){return this.tabs;};
 
+    this.getAllAsArray = function () {
+        return this.order.map(function (key) { return this.tabs[key];}, this)
+    }
+
+    this.findIndexByProperty = function (property, value) {
+        var indexOnOrder = this.getAllAsArray().findIndex(function (tab) {
+            return tab[property] == value
+        })
+        if (indexOnOrder === -1) {
+            return -1
+        }
+        return this.order[indexOnOrder]
+    }
+
     this.newTab = function(connstr){
-        if (typeof(connstr) == 'undefined'){
+        if (typeof(connstr) === 'undefined'){
             connstr = this.getConnstr(this.selectedTab);
+            if (typeof connstr === 'string' && connstr.startsWith('about:')) {
+                connstr = ''
+            }
         }
         if (this.selectedTab > 0) {
             password = this.tabs[this.selectedTab].password;
@@ -161,6 +178,19 @@ var _TabsStore = function(){
     this.setMode = function(mode){
         this.mode = mode;
     };
+
+    this.enableSchemaFilter = function (schemaFilter) {
+        this.schemaFilter = schemaFilter;
+    }
+
+    this.setSchemaFilterMode = function (mode) {
+        this.schemaFilterMode = mode;
+    }
+
+    this.setSchemaFilterRegex = function (regex) {
+        this.schemaFilterRegEx = regex;
+        this.schemaFilterCompiledRegEx = new RegExp(regex, 'i');
+    }
 
     this.getEditorMode = function(){
         if (this.mode == 'vim'){
@@ -359,6 +389,7 @@ var _TabsStore = function(){
 
     this.setEcho = function(boolean_echo){
         this.showQuery = boolean_echo;
+        this.trigger('change-show-query')
     }
 
     this.exportResult = function(filename, format){
@@ -402,8 +433,21 @@ var _TabsStore = function(){
 
     }
 
+    this.getConnectionColor = function(connstr){
+        if (connstr == null){
+            var connstr = this.getConnstr(this.selectedTab);
+        }
+        return Config.getConnectionColor(connstr);
+    }
+
+    this.saveConnectionColor = function(color){
+        var connstr = this.getConnstr(this.selectedTab);
+        Config.saveConnectionColor(connstr, color);
+    }
+
     this.setAutocompletion = function(auto_completion){
         this.auto_completion = auto_completion;
+        this.trigger('change-auto-completion');
         Config.saveAutoCompletion(auto_completion);
     }
 

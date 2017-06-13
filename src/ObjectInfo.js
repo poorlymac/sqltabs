@@ -19,7 +19,6 @@ var TabsStore = require('./TabsStore');
 var Actions = require('./Actions');
 var React = require('react');
 var Ace = require('brace');
-var $ = require('jquery');
 require('brace/mode/pgsql');
 require('brace/theme/chrome');
 require('brace/theme/idle_fingers');
@@ -39,6 +38,7 @@ var ObjectInfo = React.createClass({
     componentDidMount: function(){
 
         TabsStore.bind('change-theme', this.changeThemeHandler);
+        TabsStore.bind('change-schema-filter', this.changeSchemaFilter);
 
         if (this.scripts.length > 0){
 
@@ -71,6 +71,23 @@ var ObjectInfo = React.createClass({
         if (typeof(this.editor) != 'undefined'){
             this.editor.setTheme('ace/theme/' + TabsStore.getEditorTheme());
         }
+    },
+
+    changeSchemaFilter: function(){
+        if (this.props.info.object_type == 'database') {
+            this.forceUpdate();
+        }
+    },
+
+    filterSchemas: function(item){
+         if (TabsStore.schemaFilter) {
+             if (TabsStore.schemaFilterMode === 'white') {
+                 return TabsStore.schemaFilterCompiledRegEx.test(item);
+             } else {
+                 return !TabsStore.schemaFilterCompiledRegEx.test(item);
+             }
+         }
+         return true;
     },
 
     getInfo: function(object){
@@ -196,7 +213,7 @@ var ObjectInfo = React.createClass({
                     '#output-console-'+self.props.eventKey, "#output-console-"+self.props.eventKey
                     )}}><span className="glyphicon glyphicon-circle-arrow-up"/></a>;
 
-        var schemas = info.object.schemas.map(function(item, idx){
+        var schemas = info.object.schemas.filter(this.filterSchemas).map(function(item, idx){
             var id = "schema_"+self.props.eventKey+"_"+idx;
             return <li key={id}><a href="#" onClick={function(){self.getInfo(item+'.');}}>{item}</a></li>
         });

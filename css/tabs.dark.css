@@ -14,7 +14,7 @@
 }
 
 .input-connstr{
-    background-color: #5e5e5e;
+    background-color: rgba(94,94,94, 0.7);
 }
 
 .input-connstr:focus{
@@ -168,3 +168,52 @@ table {
     background: rgba(40, 40, 40, 0.8);
     color: #ffffff;
 }
+
+/* sqldoc table records */
+.record-negative-hl{
+    background-color: #c74946;
+    color: white;
+}
+
+.record-negative-hl:hover{
+    background-color: red;
+    color: white;
+}
+.record-neutral-hl{
+    background-color: #319e31;
+    color: white;
+}
+.record-positive-hl{
+    background-color: #337ab7;
+    color: white;
+}
+
+
+/* explain plan */
+
+.explain-plan-tree-circle{
+    stroke: aliceblue;
+    fill: yellowgreen;
+}
+
+.explain-plan-cte-record{
+    color: #da8814;
+}
+
+.explain-plan-tree-circle-never-executed{
+    fill: rgba(51, 122, 183, 1);
+}
+
+.explain-plan-tree-node-text{
+    fill: aliceblue;
+}
+
+.explain-plan-tree-link{
+    stroke: aliceblue;
+}
+
+.explain-plan-cte-link{
+    stroke: #f89406;
+}
+
+/* */

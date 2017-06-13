@@ -42,6 +42,14 @@ SignalsDispatcher.register(function(payload){
             TabsStore.setRenderer('auto');
             TabsStore.trigger('execute-all-'+TabsStore.selectedTab);
             break;
+        case 'format-block':
+            TabsStore.setRenderer('auto');
+            TabsStore.trigger('format-block-'+TabsStore.selectedTab);
+            break;
+        case 'format-all':
+            TabsStore.setRenderer('auto');
+            TabsStore.trigger('format-all-'+TabsStore.selectedTab);
+            break;
         case 'object-info':
             TabsStore.trigger('object-info-'+TabsStore.selectedTab);
             break
@@ -67,9 +75,19 @@ SignalsDispatcher.register(function(payload){
 
 AppDispatcher.register( function(payload) {
     switch( payload.eventName ) {
+        case 'show-settings':
+            // Only one settings tab open at the time, so firstly search the open one
+            var settingsTab = TabsStore.findIndexByProperty('connstr', 'about:settings')
+            if (settingsTab !== -1) {
+                TabsStore.selectTab(settingsTab)
+            } else {
+                TabsStore.newTab('about:settings');
+            }
+            TabsStore.trigger('change');
+            break;
         case 'select-tab':
             if (payload.key == 0) { // select tab 0 (+) means create a new tab
-                var tabid = TabsStore.newTab();
+                var tabid = TabsStore.newTab(payload.connstr);
                 TabsStore.tmpScript = payload.script;
                 TabsStore.trigger('change');
                 if (payload.filename){
@@ -78,8 +96,8 @@ AppDispatcher.register( function(payload) {
                 }
             } else {
                 TabsStore.selectTab(payload.key);
+                TabsStore.trigger('change');
             }
-            TabsStore.trigger('change');
             break;
 
         case 'close-tab':
@@ -104,11 +122,15 @@ AppDispatcher.register( function(payload) {
 
         case 'set-theme':
             if (payload.key == 'bright'){ // brigth
-                document.getElementById("theme_stylesheet").href = "css/bootstrap.bright.css";
-                document.getElementById("theme_tabs_stylesheet").href = "css/tabs.bright.css";
+                if(typeof window !== 'undefined') {
+                    document.getElementById("theme_stylesheet").href = "css/bootstrap.bright.css";
+                    document.getElementById("theme_tabs_stylesheet").href = "css/tabs.bright.css";
+                }
             } else { // dark
-                document.getElementById("theme_stylesheet").href = "css/bootstrap.dark.css";
-                document.getElementById("theme_tabs_stylesheet").href = "css/tabs.dark.css";
+                if(typeof window !== 'undefined') {
+                    document.getElementById("theme_stylesheet").href = "css/bootstrap.dark.css";
+                    document.getElementById("theme_tabs_stylesheet").href = "css/tabs.dark.css";
+                }
             };
 
             TabsStore.setTheme(payload.key);
@@ -120,6 +142,30 @@ AppDispatcher.register( function(payload) {
             TabsStore.setMode(payload.key);
             Config.saveMode(payload.key);
             TabsStore.trigger('change-mode');
+            break;
+
+        case 'enable-schema-filter':
+            TabsStore.enableSchemaFilter(payload.key);
+            Config.saveSchemaFilter({
+                enabled: payload.key
+            });
+            TabsStore.trigger('change-schema-filter');
+            break;
+
+        case 'set-schema-filter-mode':
+            TabsStore.setSchemaFilterMode(payload.mode);
+            Config.saveSchemaFilter({
+                mode: payload.mode
+            });
+            TabsStore.trigger('change-schema-filter');
+            break;
+
+        case 'set-schema-filter-regex':
+            TabsStore.setSchemaFilterRegex(payload.regex);
+            Config.saveSchemaFilter({
+                regex: payload.regex
+            });
+            TabsStore.trigger('change-schema-filter');
             break;
 
         case 'remove-connection-item':
@@ -251,13 +297,6 @@ AppDispatcher.register( function(payload) {
 
         case 'reread-config':
             TabsStore.rereadConfig();
-            if (TabsStore.theme == 'bright'){ // brigth
-                document.getElementById("theme_stylesheet").href = "css/bootstrap.bright.css";
-                document.getElementById("theme_tabs_stylesheet").href = "css/tabs.bright.css";
-            } else { // dark
-                document.getElementById("theme_stylesheet").href = "css/bootstrap.dark.css";
-                document.getElementById("theme_tabs_stylesheet").href = "css/tabs.dark.css";
-            };
             TabsStore.trigger('change-theme');
             TabsStore.trigger('change-mode');
             TabsStore.trigger('change');
@@ -301,6 +340,10 @@ AppDispatcher.register( function(payload) {
 
         case 'export-result':
             TabsStore.exportResult(payload.filename, payload.format);
+            break;
+
+        case 'connection-color-change':
+            TabsStore.trigger('connection-color-change');
             break;
 
     }

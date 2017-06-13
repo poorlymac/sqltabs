@@ -20,12 +20,13 @@ body{
 .tab-navigator{
     display: block;
     width: 100%;
-    margin-left: 3px;
+    margin-left: 8px;
 }
 
 .tab-title{
     display: inline-block;
     min-width: 60px;
+    margin-left: 10px;
 }
 
 .tab-close-button{
@@ -69,10 +70,7 @@ body{
 
 .tab-toolbar{
     display: table;
-    margin-top: 3px;
-    margin-left: 3px;
-    margin-right: 3px;
-    margin-bottom: 3px;
+    padding: 3px;
 }
 
 .tab-toolbar-form{
@@ -95,6 +93,7 @@ body{
     padding: 3px 12px;
     font-size: inherit;
     height: inherit;
+    padding-right: 50px;
 }
 
 .tab-split {
@@ -183,23 +182,68 @@ body{
     font-weight: bold;
 }
 
+/* table column */
+.table-column-header{
+    cursor: pointer;
+    white-space: nowrap;
+    vertical-align: top !important;
+}
+
+.table-column-header-info{
+    margin-left: 5px;
+    margin-right: 2px;
+}
+
+.table-column-sorted-asc:after{
+    content: "\e094";
+    font-family: 'Glyphicons Halflings';
+}
+
+.table-column-sorted-desc:after{
+    content: "\e093";
+    font-family: 'Glyphicons Halflings';
+}
+
+.table-column-sorted-none:after{
+    padding-left: 1.8em;
+}
+
+.table-column-header-datatype{
+    font-size: 0.6em;
+}
+
+/* table */
+
 .table-resultset {
     width: auto;
+    margin-left: 10px;
 }
 
 .table-resultset td {
   white-space: pre-wrap;
 }
 
+.record-numeric-cell{
+    text-align: right;
+}
+
 .duration-div {
     margin-left: 10px;
     margin-right: 20px;
+    min-height: 50px;
 }
 
 .duration-table{
     width: 100%;
     text-align: right;
 }
+
+
+/* share button */
+.duration-div .btn{
+}
+
+/* */
 
 .duration-table tr td:first-child{
     text-align: left;
@@ -225,9 +269,30 @@ body{
     display: none;
 }
 
+.toggle-theme-button{
+    position: absolute;
+    cursor: pointer;
+    right: 30px;
+    margin-top: 5px;
+}
+
+.conn-color-button{
+    position: absolute;
+    cursor: pointer;
+    right: 10px;
+    margin-top: 5px;
+}
+
 .conn_history_item{
-    cursor: pointer;    
+    cursor: pointer;
     padding-left: 5px;
+}
+
+.connection-color-circle{
+    width: 14px;
+    height: 14px;
+    border-radius: 8px;
+    display: inline-block;
 }
 
 .conn_item_alias{
@@ -380,6 +445,7 @@ body{
 }
 
 .project-toolbar{
+    position: relative;
     padding-top: 10px;
     width: 100%;
     text-align: left;
@@ -477,3 +543,104 @@ body{
 .non-printed-char{
     color: red;
 }
+
+
+.input-connstr-color{
+    margin-left: -30px;
+    cursor: pointer;
+}
+
+
+/* Color picker */
+.color-picker{
+    position: absolute;
+    z-index: 100;
+    right: 10px;
+    top: 80px;
+}
+
+.clear-color{
+    cursor: pointer;
+    margin-top: 10px;
+    width: 100%;
+    text-align: center;
+}
+
+/* Modal from react-bootstrap */
+
+.modal-container {
+  position: relative;
+}
+.modal-container .modal, .modal-container .modal-backdrop {
+  position: absolute;
+}
+
+/* data charts */
+
+div[data-chart-id]{
+    margin-left: 10px;
+}
+
+
+/* bubble chart */
+
+.bubbles-tooltip{
+position: absolute;
+z-index: 10;
+visibility: hidden;
+color: white;
+padding: 8px;
+background-color: rgba(0, 0, 0, 0.75);
+border-radius: 6px;
+font: 12px sans-serif;
+}
+
+/* explain plan */
+.explain-plan-header-title{
+}
+
+.explain-plan-node-title{
+}
+
+.explain-plan-node-arrow{
+    cursor: pointer;
+}
+
+.explain-plan-node-arrow-hidden{
+    font-size: 0;
+    color: rgba(0,0,0,0);
+}
+
+.explain-plan-node-skipped-note{
+    font-size: 0;
+    color: rgba(0,0,0,0);
+}
+
+.explain-plan-details{
+    font-family: monospace;
+}
+
+.explain-plan-rownum-switch{
+    cursor: pointer;
+}
+
+.explain-plan-view-switcher{
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+.explain-plan-mount-div{
+    width: 100%;
+    height: 400px;
+    overflow: scroll;
+    border: solid 1px;
+}
+
+
+/* SVG */
+
+path.link{
+    fill: none;
+}
+
+/* */

@@ -4,6 +4,14 @@
     border: 1px solid rgb(200, 200, 200);
 }
 
+.input-connstr{
+    background-color: rgba(253, 253, 253, 0.7);
+}
+
+.input-connstr:focus{
+    background-color: #ffffff;
+}
+
 .conn_history_item:hover{
     background-color: lightgrey;
 }
@@ -92,3 +100,48 @@
 .floating-cols-header {
     background: rgba(255, 255, 255, 0.9);
 }
+
+/* sqldoc table records */
+.record-negative-hl{
+    background-color: #d6481c;
+    color: white;
+}
+.record-neutral-hl{
+    background-color: #498a4a;
+    color: white;
+}
+.record-positive-hl{
+    background-color: #55a9f3;
+    color: white;
+}
+
+
+/* explain plan */
+
+.explain-plan-tree-circle{
+    stroke: #607d8b;
+    fill: #cbea8b;
+}
+
+.explain-plan-cte-record{
+    color: #da8814;
+}
+
+.explain-plan-tree-node-text{
+    fill: #607d8b;
+}
+
+.explain-plan-tree-link{
+    stroke: #607d8b;
+}
+
+.explain-plan-cte-link{
+    stroke: #c09853;
+}
+
+.explain-plan-tree-circle-never-executed{
+    fill: rgba(135, 175, 210, 1);
+}
+
+
+/* */

@@ -35,6 +35,15 @@ if (!db.object.config){
 var config = db.object.config;
 
 var Conf = {
+    saveSchemaFilter: function(newProps){
+        config.schemaFilter = Object.assign({}, config.schemaFilter, newProps);
+        this.saveSync();
+    },
+
+    getSchemaFilter: function(){
+        return config.schemaFilter;
+    },
+
     saveTheme: function(theme){
         config.theme = theme;
         this.saveSync();
@@ -79,7 +88,12 @@ var Conf = {
         return config.projects;
     },
 
-    saveAutoCompletion(auto_completion){
+    saveProjects: function(projects){
+        config.projects = projects;
+        this.saveSync();
+    },
+
+    saveAutoCompletion: function(auto_completion){
         config.auto_completion = auto_completion;
         this.saveSync();
     },
@@ -88,17 +102,50 @@ var Conf = {
         return config.auto_completion;
     },
 
-    saveProjects: function(projects){
-        config.projects = projects;
-        this.saveSync();
-    },
-
     getSharingServer: function(){
-        return config.sharing_server;
+        if (config.sharing_server == "sqltabs.com" || config.sharing_server == "www.sqltabs.com"){
+            return "share.sqltabs.com";
+        } else {
+            return config.sharing_server;
+        };
     },
 
     saveSharingServer: function(server){
         config.sharing_server = server;
+        this.saveSync();
+    },
+
+    getNoProtocolDialog: function(){
+        return config.no_protocol_dialog;
+    },
+
+    saveNoProtocolDialog: function(value){
+        config.no_protocol_dialog = value;
+        this.saveSync();
+    },
+
+    getConnectionColor: function(connstr){
+        if (typeof(config.connectionColors) == 'undefined'){
+            config.connectionColors = {};
+        }
+
+        if (connstr in config.connectionColors){
+            return  config.connectionColors[connstr];
+        } else {
+            return 'inherit';
+        }
+
+    },
+
+    saveConnectionColor: function(connstr, color){
+        if (typeof(config.connectionColors) == 'undefined'){
+            config.connectionColors = {};
+        }
+        if (color != null) {
+            config.connectionColors[connstr] = color;
+        } else {
+            delete config.connectionColors[connstr];
+        }
         this.saveSync();
     },
 
@@ -114,6 +161,7 @@ var Conf = {
         var Actions = require('./Actions');
         Actions.rereadConfig();
     },
+
 
 }
 
